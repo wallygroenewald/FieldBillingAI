@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block content %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Manage Users</title>
+</head>
+<body>
+
+<h1>Manage Users</h1>
+
+
+<hr>
+<h2>Add User</h2>
+
+<input type="text" id="username" placeholder="Username" required>
+<input type="password" id="password" placeholder="Password" required>
+
+<select id="role">
+    <option value="user">User</option>
+    <option value="admin">Admin</option>
+</select>
+
+<button onclick="addUser()">Add User</button>
+
+<hr>
+<table border="1" cellpadding="8">
+    <tr>
+        <th>ID</th>
+        <th>Username</th>
+        <th>Role</th>
+        <th>Actions</th>
+    </tr>
+
+    {% for user in users %}
+    <tr>
+        <td>{{ user[0] }}</td>
+        <td>{{ user[1] }}</td>
+        <td>{{ user[2] }}</td>
+        <td>
+
+            <form method="post" action="/admin/delete-user/{{ user[0] }}" style="display:inline;">
+                <button style="background:red;">Delete</button>
+            </form>
+
+            <form method="post" action="/admin/reset-password/{{ user[0] }}" style="display:inline;">
+                <input type="text" name="new_password" placeholder="New password" required>
+                <button>Reset</button>
+            </form>
+
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+<script>
+async function addUser() {
+
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
+    const role = document.getElementById("role").value;
+
+    const formData = new FormData();
+    formData.append("username", username);
+    formData.append("password", password);
+    formData.append("role", role);
+
+    const response = await fetch("/admin/add-user", {
+        method: "POST",
+        body: formData
+    });
+
+    const data = await response.json();
+
+    if (data.status === "success") {
+        showToast("User added successfully!");
+        location.reload();
+    } else if (data.status === "exists") {
+        showToast("User already exists!");
+    } else {
+        showToast("Error adding user.");
+    }
+}
+</script>
+</body>
+</html>
+{% endblock %}

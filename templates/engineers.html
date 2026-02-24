@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block content %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Engineers</title>
+</head>
+<body>
+
+<h1>Engineers</h1>
+
+
+<hr>
+
+<h3>Add Engineer</h3>
+
+<input type="text" id="name" placeholder="Engineer Name" required>
+<input type="text" id="home_address" placeholder="Home Address" required>
+<button onclick="addEngineer()">Add Engineer</button>
+
+<hr>
+
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Name</th>
+        <th>Address</th>
+        <th>Lat</th>
+        <th>Lng</th>
+        <th>Map</th>
+        <th>Action</th>
+    </tr>
+
+    {% for eng in engineers %}
+    <tr>
+        <td>{{ eng[1] }}</td>
+        <td>{{ eng[2] }}</td>
+        <td>{{ eng[3] }}</td>
+        <td>{{ eng[4] }}</td>
+
+        <td>
+            <a href="https://www.google.com/maps?q={{ eng[3] }},{{ eng[4] }}"
+               target="_blank">
+               📍 View
+            </a>
+        </td>
+
+        <td>
+            <form method="post" action="/admin/delete-engineer/{{ eng[0] }}">
+                <button style="background:red;">Delete</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+<script>
+async function addEngineer() {
+
+    const name = document.getElementById("name").value;
+    const address = document.getElementById("home_address").value;
+
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("home_address", address);
+
+    const response = await fetch("/add-engineer", {
+        method: "POST",
+        body: formData
+    });
+
+    const data = await response.json();
+
+    if (data.status === "success") {
+        showToast("Engineer added successfully!");
+        location.reload();
+    } else if (data.status === "geocode_failed") {
+        showToast("Could not find location on Google Maps.");
+    } else {
+        showToast("Error adding engineer.");
+    }
+}
+</script>
+</body>
+</html>
+{% endblock %}

@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="margin-bottom:20px;">
+    <a href="/admin/dashboard">← Back to Admin</a> |
+    <a href="/admin/logout">Logout</a>
+</div>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sites Admin</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="container">
+
+    <div style="margin-bottom:20px;">
+        <a href="/">⬅ Back to Billing</a> |
+        <a href="/admin">Admin Dashboard</a> |
+        <a href="/admin/logout">Logout</a>
+    </div>
+
+    <h1>Sites</h1>
+
+    <div class="card">
+        <h3>Add Site</h3>
+
+        <input type="text" id="client_name" placeholder="Client Name">
+        <input type="text" id="site_name" placeholder="Site Name">
+        <input type="text" id="site_address" placeholder="Site Address">
+
+        <button onclick="addSite()">Add Site</button>
+    </div>
+
+    <hr>
+
+    <h3>Existing Sites</h3>
+
+    <table border="1" width="100%" cellpadding="6">
+        <tr>
+            <th>Client</th>
+            <th>Site Name</th>
+            <th>Address</th>
+            <th>Latitude</th>
+            <th>Longitude</th>
+        </tr>
+
+        {% for site in sites %}
+        <tr>
+            <td>{{ site[1] }}</td>
+            <td>{{ site[2] }}</td>
+            <td>{{ site[3] }}</td>
+            <td>{{ site[4] }}</td>
+            <td>{{ site[5] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+</div>
+
+<script>
+async function addSite() {
+
+    const client = document.getElementById("client_name").value;
+    const site = document.getElementById("site_name").value;
+    const address = document.getElementById("site_address").value;
+
+    const response = await fetch(`/add-site?client_name=${client}&site_name=${site}&site_address=${address}`, {
+        method: "POST"
+    });
+
+    const data = await response.json();
+
+    if (data.status === "success") {
+        showToast("Site added successfully!");
+        location.reload();
+    } else {
+        showToast("Geocoding failed.");
+    }
+}
+</script>
+
+</body>
+</html>
+{% endblock %}

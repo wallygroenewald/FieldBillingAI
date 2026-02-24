@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2 style="text-align:center; margin-bottom:30px;">
+Field Billing AI
+</h2>
+
+<div class="calculator-card">
+
+    <input type="text" placeholder="Origin">
+    <input type="text" placeholder="Destination">
+
+    <button onclick="calculateRoute()">Calculate</button>
+
+</div>
+<script>
+async function calculateRoute() {
+
+    const origin = document.querySelectorAll("input")[0].value;
+    const destination = document.querySelectorAll("input")[1].value;
+
+    const formData = new FormData();
+    formData.append("origin", origin);
+    formData.append("destination", destination);
+
+    const response = await fetch("/calculate-route", {
+        method: "POST",
+        body: formData
+    });
+
+    if (!response.ok) {
+        showToast("Route calculation failed", "error");
+        return;
+    }
+
+    const data = await response.json();
+
+    showToast(`Distance: ${data.distance_km}km | ${data.duration_minutes}min`);
+}
+</script>
+<hr style="margin:40px 0; border-color:#334155;">
+
+<h3>Saved Jobs</h3>
+
+<table class="dark-table">
+<tr>
+<th>ID</th>
+<th>Origin</th>
+<th>Destination</th>
+<th>KM</th>
+<th>Minutes</th>
+</tr>
+
+<!-- Your rows here -->
+
+</table>
+
+<style>
+.calculator-card {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 30px;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(12px);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.calculator-card input {
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #334155;
+    background-color: #0f172a;
+    color: white;
+}
+
+.calculator-card button {
+    padding: 12px;
+    border-radius: 8px;
+    background: linear-gradient(90deg, #2563eb, #1d4ed8);
+    border: none;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.calculator-card button:hover {
+    background: linear-gradient(90deg, #1d4ed8, #1e40af);
+}
+
+.dark-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: rgba(255,255,255,0.05);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.dark-table th {
+    background: rgba(255,255,255,0.1);
+    padding: 10px;
+}
+
+.dark-table td {
+    padding: 10px;
+    border-top: 1px solid #334155;
+}
+
+.dark-table tr:hover {
+    background: rgba(14,165,233,0.1);
+}
+</style>
+
+{% endblock %}

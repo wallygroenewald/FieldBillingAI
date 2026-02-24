@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Field Automation Billing</title>
+    <style>
+        body {
+            margin:0;
+            height:100vh;
+            background-image: url("https://images.unsplash.com/photo-1503376780353-7e6692767b70");
+            background-size: cover;
+            background-position: center;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            font-family: Arial;
+        }
+
+        .login-box {
+            background: rgba(255,255,255,0.9);
+            padding:40px;
+            border-radius:10px;
+            width:350px;
+            box-shadow:0 0 20px rgba(0,0,0,0.3);
+            text-align:center;
+        }
+
+        h1 {
+            margin-bottom:25px;
+        }
+
+        input {
+            width:100%;
+            padding:10px;
+            margin-bottom:15px;
+        }
+
+        button {
+            width:100%;
+            padding:12px;
+            background:#1f4ed8;
+            color:white;
+            border:none;
+            cursor:pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-box">
+    <h1>Field Automation Billing</h1>
+{% if error %}
+    <p style="color:red;">{{ error }}</p>
+{% endif %}
+    <form method="post" action="/admin/login">
+        <input type="text" name="username" placeholder="Username" required>
+        <input type="password" name="password" placeholder="Password" required>
+        <button>Login</button>
+    </form>
+</div>
+
+</body>
+</html>

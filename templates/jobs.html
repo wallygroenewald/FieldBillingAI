@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block content %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Saved Jobs</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="container">
+    <h1>Saved Jobs</h1>
+
+    <table border="1" width="100%" cellpadding="8">
+        <tr>
+            <th>ID</th>
+            <th>Origin</th>
+            <th>Destination</th>
+            <th>Distance (km)</th>
+            <th>Duration (min)</th>
+            <th>Created</th>
+        </tr>
+
+        {% for job in jobs %}
+        <tr>
+            <td>{{ job[0] }}</td>
+            <td>{{ job[1] }}</td>
+            <td>{{ job[2] }}</td>
+            <td>{{ job[3] }}</td>
+            <td>{{ job[4] }}</td>
+            <td>{{ job[5] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <br>
+    <a href="/">← Back</a>
+
+</div>
+
+</body>
+</html>
+{% endblock %}

@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block content %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Route Cache</title>
+</head>
+<body>
+
+<h1>Route Cache Management</h1>
+
+
+
+<hr>
+
+<table border="1" cellpadding="8" width="100%">
+    <tr>
+        <th>ID</th>
+        <th>Origin</th>
+        <th>Destination</th>
+        <th>Distance (km)</th>
+        <th>Duration (min)</th>
+        <th>Added By</th>
+        <th>Created</th>
+        <th>Map</th>
+        <th>Save</th>
+    </tr>
+
+    {% for route in routes %}
+    <tr>
+        <td>{{ route[0] }}</td>
+        <td>{{ route[1] }}</td>
+        <td>{{ route[2] }}</td>
+
+        <td>
+            <input type="number" step="0.01"
+                   id="dist_{{ route[0] }}"
+                   value="{{ route[3] }}">
+        </td>
+
+        <td>
+            <input type="number" step="0.1"
+                   id="dur_{{ route[0] }}"
+                   value="{{ route[4] }}">
+        </td>
+
+        <td>{{ route[5] }}</td>
+        <td>{{ route[6] }}</td>
+
+        <td>
+            <a href="https://www.google.com/maps/dir/{{ route[1] }}/{{ route[2] }}"
+               target="_blank">
+               📍 View
+            </a>
+        </td>
+
+        <td>
+            <button onclick="updateRoute({{ route[0] }})">
+                Save
+            </button>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+<script>
+async function updateRoute(id) {
+
+    const distance = document.getElementById("dist_" + id).value;
+    const duration = document.getElementById("dur_" + id).value;
+
+    const formData = new FormData();
+    formData.append("id", id);
+    formData.append("distance_km", distance);
+    formData.append("duration_minutes", duration);
+
+    const response = await fetch("/admin/update-route", {
+        method: "POST",
+        body: formData
+    });
+
+    const data = await response.json();
+
+    if (data.status === "updated") {
+        showToast("Route updated successfully!");
+    } else {
+        showToast("Error updating route.");
+    }
+}
+</script>
+
+</body>
+</html>
+{% endblock %}

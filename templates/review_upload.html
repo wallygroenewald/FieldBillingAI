@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Review Billing Upload</h2>
+
+<table>
+<tr>
+<th>ID</th>
+<th>Engineer</th>
+<th>Reference</th>
+<th>Client</th>
+<th>Site</th>
+<th>Recorded KM</th>
+<th>Recorded Travel</th>
+<th>Recorded Onsite</th>
+<th>System KM</th>
+<th>System Travel</th>
+<th>Visits</th>
+<th>Final KM</th>
+<th>Final Travel</th>
+<th>Final Onsite</th>
+<th>Status</th>
+<th>Map</th>
+<th>Action</th>
+</tr>
+
+{% for row in rows %}
+<tr>
+<td>{{ row[0] }}</td>
+
+<td>
+{{ row[1] }}
+{% if row[17] == "ENGINEER NOT FOUND" %}
+<span class="error">(NOT IN SYSTEM)</span>
+{% else %}
+<span class="ok">(OK)</span>
+{% endif %}
+</td>
+
+<td>{{ row[2] }}</td>
+<td>{{ row[4] }}</td>
+<td>{{ row[3] }}</td>
+
+<td>{{ row[7] }}</td>
+<td>{{ row[8] }}</td>
+<td>{{ row[9] }}</td>
+
+<td>{{ row[10] }}</td>
+<td>{{ row[11] }}</td>
+
+<td>
+<input type="number"
+id="visits_{{ row[0] }}"
+value="{{ row[12] }}"
+min="1"
+onchange="recalc({{ row[0] }}, {{ row[10] }}, {{ row[11] }})">
+</td>
+
+<td><input id="final_km_{{ row[0] }}" value="{{ row[13] }}"></td>
+<td><input id="final_travel_{{ row[0] }}" value="{{ row[14] }}"></td>
+<td><input value="{{ row[15] }}"></td>
+
+<td>{{ row[17] }}</td>
+
+<td>
+<a href="https://www.google.com/maps?q={{ row[6] }}" target="_blank">📍</a>
+</td>
+
+<td>
+{% if row[17] == "ENGINEER NOT FOUND" %}
+<button onclick="addEngineerPopup('{{ row[1] }}', {{ row[0] }})">
+Add Engineer
+</button>
+{% else %}
+<button onclick="approveRow({{ row[0] }})">
+Approve
+</button>
+{% endif %}
+</td>
+
+</tr>
+{% endfor %}
+</table>
+
+<br>
+<button onclick="approveAll()">Approve All</button>
+
+<script>
+function recalc(rowId, systemKm, systemMin) {
+    const visits = parseInt(document.getElementById("visits_" + rowId).value) || 1;
+    const finalKm = (systemKm * visits).toFixed(2);
+    const finalMin = (systemMin * visits).toFixed(1);
+    document.getElementById("final_km_" + rowId).value = finalKm;
+    document.getElementById("final_travel_" + rowId).value = finalMin;
+}
+</script>
+
+{% endblock %}

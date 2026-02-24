@@ -1,0 +1,163 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ title if title else "Field Billing AI" }}</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            color: #f1f5f9;
+        }
+
+        .navbar {
+            background: rgba(0,0,0,0.4);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar a {
+            color: #38bdf8;
+            text-decoration: none;
+            margin-right: 20px;
+            font-weight: bold;
+        }
+
+        .navbar a:hover {
+            color: #0ea5e9;
+        }
+
+        .container {
+            padding: 30px;
+        }
+
+        .card {
+            background: rgba(255,255,255,0.05);
+            padding: 25px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background-color: rgba(255,255,255,0.08);
+        }
+
+        tr:nth-child(even) {
+            background-color: rgba(255,255,255,0.04);
+        }
+
+        button {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            background-color: #0ea5e9;
+            color: white;
+        }
+
+        button:hover {
+            background-color: #0284c7;
+        }
+
+        input, textarea {
+            border-radius: 6px;
+            border: 1px solid #334155;
+            background-color: #0f172a;
+            color: white;
+            padding: 4px;
+        }
+
+        .ok { color: #22c55e; font-weight: bold; }
+        .error { color: #ef4444; font-weight: bold; }
+    </style>
+</head>
+<div id="toast" class="toast"></div>
+
+<style>
+.toast {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: linear-gradient(90deg, #22c55e, #16a34a);
+    color: white;
+    padding: 14px 22px;
+    border-radius: 10px;
+    font-weight: bold;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.4s ease;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+    z-index: 9999;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.toast.error {
+    background: linear-gradient(90deg, #ef4444, #dc2626);
+}
+</style>
+
+<script>
+function showToast(message, type="success") {
+    const toast = document.getElementById("toast");
+    toast.innerText = message;
+
+    toast.classList.remove("error");
+
+    if(type === "error"){
+        toast.classList.add("error");
+    }
+
+    toast.classList.add("show");
+
+    setTimeout(() => {
+        toast.classList.remove("show");
+    }, 3000);
+}
+</script>
+<body>
+
+{% if request.session.get("user") %}
+<div class="navbar">
+    <div>
+        <a href="/">Home</a>
+        <a href="/upload">Upload</a>
+        <a href="/engineers">Engineers</a>
+        <a href="/route-cache">Route Cache</a>
+        <a href="/admin/users">Users</a>
+        <a href="/admin">Admin</a>
+    </div>
+    <div>
+        Logged in as {{ request.session.get("user") }}
+        |
+        <a href="/logout">Logout</a>
+    </div>
+</div>
+{% endif %}
+
+<div class="container">
+    <div class="card">
+        {% block content %}{% endblock %}
+    </div>
+</div>
+
+</body>
+</html>

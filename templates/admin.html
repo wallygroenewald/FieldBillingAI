@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="padding:10px; background:#e6f4ea; margin-bottom:20px;">
+    Logged in as Admin |
+    <a href="/logout">Logout</a> |
+    <a href="/">Billing Page</a>
+</div>
+<h2>Add New User</h2>
+
+<form method="post" action="/admin/add-user">
+    <input type="text" name="username" placeholder="Username" required>
+    <input type="password" name="password" placeholder="Password" required>
+    <select name="role">
+        <option value="user">User</option>
+        <option value="admin">Admin</option>
+    </select>
+    <button type="submit">Create User</button>
+</form>
+
+<hr>
+{% endblock %}
