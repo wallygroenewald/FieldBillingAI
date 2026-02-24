@@ -1,0 +1,12 @@
+# Environment
+.env
+
+# Database
+billing.db
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Mac junk
+.DS_Store
