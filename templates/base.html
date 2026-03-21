@@ -133,9 +133,106 @@ function showToast(message, type="success") {
     }, 3000);
 }
 </script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBub4R9xbJGOU9YKGk9Vk2WwqfMvUqhkik&libraries=places"></script>
+
+<script>
+
+let autocomplete;
+let map;
+let marker;
+let selectedLat = null;
+let selectedLng = null;
+let currentEngineerId = null;
+
+
+function verifyEngineer(engineerId) {
+
+    currentEngineerId = engineerId;
+
+    document.getElementById("verifyModal").style.display = "flex";
+
+    setTimeout(initAutocomplete, 300);
+}
+
+
+function closeVerifyModal(){
+    document.getElementById("verifyModal").style.display = "none";
+}
+
+
+function initAutocomplete() {
+
+    const input = document.getElementById("autocomplete_address");
+
+    autocomplete = new google.maps.places.Autocomplete(input, {
+        types: ["address"],
+        componentRestrictions: { country: "za" }
+    });
+
+    map = new google.maps.Map(document.getElementById("map"), {
+        center: { lat: -26.2041, lng: 28.0473 },
+        zoom: 10,
+        mapTypeControl: false
+    });
+
+    marker = new google.maps.Marker({
+        map: map
+    });
+
+    autocomplete.addListener("place_changed", function () {
+
+        const place = autocomplete.getPlace();
+
+        if (!place.geometry) {
+            alert("Please select an address from the dropdown list.");
+            return;
+        }
+
+        selectedLat = place.geometry.location.lat();
+        selectedLng = place.geometry.location.lng();
+
+        map.setCenter(place.geometry.location);
+        map.setZoom(15);
+
+        marker.setPosition(place.geometry.location);
+    });
+
+}
+
+
+async function saveVerifiedAddress() {
+
+    if (!selectedLat || !selectedLng){
+        alert("Please select a valid address.");
+        return;
+    }
+
+    const address = document.getElementById("autocomplete_address").value;
+
+    const formData = new FormData();
+    formData.append("home_address", address);
+    formData.append("lat", selectedLat);
+    formData.append("lng", selectedLng);
+
+    const response = await fetch("/admin/verify-engineer/" + currentEngineerId, {
+        method: "POST",
+        body: formData
+    });
+
+    const data = await response.json();
+
+    if(data.status === "verified"){
+        location.reload();
+    } else {
+        alert("Error verifying address");
+    }
+
+}
+
+</script>
 <body>
 
-{% if request.session.get("user") %}
+{% if request.session.get("user_id") %}
 <div class="navbar">
     <div>
         <a href="/">Home</a>
@@ -143,16 +240,91 @@ function showToast(message, type="success") {
         <a href="/engineers">Engineers</a>
         <a href="/route-cache">Route Cache</a>
         <a href="/admin/users">Users</a>
+        <a href="/admin/clients">Clients</a>
         <a href="/admin">Admin</a>
     </div>
     <div>
-        Logged in as {{ request.session.get("user") }}
+        Logged in as {{ request.session.get("username") }}
         |
         <a href="/logout">Logout</a>
     </div>
 </div>
 {% endif %}
+<!-- VERIFY ENGINEER MODAL -->
 
+<div id="verifyModal" style="
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.7);
+z-index:9999;
+align-items:center;
+justify-content:center;
+">
+
+<div style="
+background:#0f172a;
+padding:25px;
+border-radius:10px;
+width:500px;
+color:white;
+">
+
+<h3>Verify Engineer Address</h3>
+
+<input 
+    type="text" 
+    id="autocomplete_address" 
+    placeholder="Start typing address..."
+    style="
+    width:100%;
+    padding:10px;
+    margin-bottom:15px;
+    border-radius:6px;
+    border:1px solid #334155;
+    background:#020617;
+    color:white;
+">
+
+<div id="map" style="
+width:100%;
+height:250px;
+border-radius:8px;
+margin-bottom:15px;
+"></div>
+
+<div style="display:flex; gap:10px;">
+
+<button onclick="saveVerifiedAddress()" style="
+background:#22c55e;
+padding:8px 15px;
+border:none;
+border-radius:6px;
+cursor:pointer;
+color:black;
+font-weight:bold;
+">
+Save & Verify
+</button>
+
+<button onclick="closeVerifyModal()" style="
+background:#ef4444;
+padding:8px 15px;
+border:none;
+border-radius:6px;
+cursor:pointer;
+color:white;
+">
+Cancel
+</button>
+
+</div>
+
+</div>
+</div>
 <div class="container">
     <div class="card">
         {% block content %}{% endblock %}

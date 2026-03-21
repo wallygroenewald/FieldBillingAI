@@ -1,16 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Route Cache</title>
-</head>
-<body>
 
 <h1>Route Cache Management</h1>
-
-
-
 <hr>
 
 <table border="1" cellpadding="8" width="100%">
@@ -23,30 +14,47 @@
         <th>Added By</th>
         <th>Created</th>
         <th>Map</th>
-        <th>Save</th>
+        <th>Actions</th>
     </tr>
 
     {% for route in routes %}
     <tr>
+        <!-- ID -->
         <td>{{ route[0] }}</td>
-        <td>{{ route[1] }}</td>
-        <td>{{ route[2] }}</td>
 
+        <!-- ORIGIN -->
         <td>
-            <input type="number" step="0.01"
+            <strong>{{ route[3]}}</strong><br>
+            <small>{{ route[10] if route[10] else route[1] }}</small>
+        </td>
+
+        <!-- DESTINATION -->
+        <td>
+            <strong>{{ route[4]}}</strong><br>
+            <small>{{ route[9] }}</small>
+        </td>
+
+        <!-- DISTANCE -->
+        <td>
+            <input type="number"
+                   step="0.01"
                    id="dist_{{ route[0] }}"
-                   value="{{ route[3] }}">
+                   value="{{ route[5] }}">
         </td>
 
+        <!-- DURATION -->
         <td>
-            <input type="number" step="0.1"
+            <input type="number"
+                   step="0.1"
                    id="dur_{{ route[0] }}"
-                   value="{{ route[4] }}">
+                   value="{{ route[6] }}">
         </td>
 
-        <td>{{ route[5] }}</td>
-        <td>{{ route[6] }}</td>
+        <!-- META -->
+        <td>{{ route[7] }}</td>
+        <td>{{ route[8] }}</td>
 
+        <!-- MAP -->
         <td>
             <a href="https://www.google.com/maps/dir/{{ route[1] }}/{{ route[2] }}"
                target="_blank">
@@ -54,11 +62,18 @@
             </a>
         </td>
 
+        <!-- ACTIONS -->
         <td>
             <button onclick="updateRoute({{ route[0] }})">
                 Save
             </button>
+
+            <button onclick="deleteRoute({{ route[0] }})"
+                    style="background:red; color:white;">
+                Delete
+            </button>
         </td>
+
     </tr>
     {% endfor %}
 </table>
@@ -82,13 +97,28 @@ async function updateRoute(id) {
     const data = await response.json();
 
     if (data.status === "updated") {
-        showToast("Route updated successfully!");
+        location.reload();
     } else {
-        showToast("Error updating route.");
+        alert("Error updating route");
+    }
+}
+
+async function deleteRoute(id) {
+
+    if (!confirm("Delete this route?")) return;
+
+    const response = await fetch("/route-cache/delete/" + id, {
+        method: "POST"
+    });
+
+    const data = await response.json();
+
+    if (data.status === "deleted") {
+        location.reload();
+    } else {
+        alert("Error deleting route");
     }
 }
 </script>
 
-</body>
-</html>
 {% endblock %}

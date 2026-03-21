@@ -3,6 +3,22 @@
 
 <h2>Review Billing Upload</h2>
 
+<form method="get" action="/review-upload" style="margin-bottom:20px;">
+    <label>Start Date:</label>
+    <input type="date" name="start_date" value="{{ start_date or '' }}">
+    <label style="margin-left:15px;">End Date:</label>
+    <input type="date" name="end_date" value="{{ end_date or '' }}">
+    <button type="submit">Filter</button>
+</form>
+
+<style>
+table { font-size: 12px; table-layout: fixed; width: 100%; }
+th, td { padding: 6px; word-wrap: break-word; }
+input { width: 80px; font-size: 12px; padding: 4px; }
+.ok { color: #22c55e; }
+.warning { color: #f59e0b; }
+</style>
+
 <table>
 <tr>
 <th>ID</th>
@@ -10,30 +26,31 @@
 <th>Reference</th>
 <th>Client</th>
 <th>Site</th>
-<th>Recorded KM</th>
-<th>Recorded Travel</th>
-<th>Recorded Onsite</th>
-<th>System KM</th>
-<th>System Travel</th>
+<th>Engineer KM</th>
+<th>Engineer Travel (mins)</th>
+<th>Engineer Onsite (mins)</th>
+<th>Return</th>
 <th>Visits</th>
 <th>Final KM</th>
 <th>Final Travel</th>
 <th>Final Onsite</th>
 <th>Status</th>
 <th>Map</th>
-<th>Action</th>
 </tr>
 
 {% for row in rows %}
 <tr>
+
 <td>{{ row[0] }}</td>
 
 <td>
-{{ row[1] }}
-{% if row[17] == "ENGINEER NOT FOUND" %}
-<span class="error">(NOT IN SYSTEM)</span>
+{{ row[1] }}<br>
+
+{% if row[20] == 1 %}
+    <span class="ok">✔ Verified</span><br>
+    <small>{{ row[21] }}</small>
 {% else %}
-<span class="ok">(OK)</span>
+    <span class="warning">⚠ Not Verified</span>
 {% endif %}
 </td>
 
@@ -41,58 +58,72 @@
 <td>{{ row[4] }}</td>
 <td>{{ row[3] }}</td>
 
+<td>{{ row[6] }}</td>
 <td>{{ row[7] }}</td>
 <td>{{ row[8] }}</td>
-<td>{{ row[9] }}</td>
 
-<td>{{ row[10] }}</td>
-<td>{{ row[11] }}</td>
+<td>
+<input type="checkbox"
+       id="return_{{ row[0] }}"
+       {% if row[19] == 1 %}checked{% endif %}
+       onchange="recalc({{ row[0] }}, {{ row[9] }}, {{ row[10] }})">
+</td>
 
 <td>
 <input type="number"
-id="visits_{{ row[0] }}"
-value="{{ row[12] }}"
-min="1"
-onchange="recalc({{ row[0] }}, {{ row[10] }}, {{ row[11] }})">
+       id="visits_{{ row[0] }}"
+       value="{{ row[11] }}"
+       min="1"
+       onchange="recalc({{ row[0] }}, {{ row[9] }}, {{ row[10] }})">
 </td>
 
-<td><input id="final_km_{{ row[0] }}" value="{{ row[13] }}"></td>
-<td><input id="final_travel_{{ row[0] }}" value="{{ row[14] }}"></td>
-<td><input value="{{ row[15] }}"></td>
-
-<td>{{ row[17] }}</td>
+<td><input id="final_km_{{ row[0] }}" value="{{ row[12] }}"></td>
+<td><input id="final_travel_{{ row[0] }}" value="{{ row[13] }}"></td>
+<td><input value="{{ row[14] }}"></td>
 
 <td>
-<a href="https://www.google.com/maps?q={{ row[6] }}" target="_blank">📍</a>
-</td>
-
-<td>
-{% if row[17] == "ENGINEER NOT FOUND" %}
-<button onclick="addEngineerPopup('{{ row[1] }}', {{ row[0] }})">
-Add Engineer
-</button>
+{% if row[21] == 0 %}
+    <span style="color:#f97316;">
+        ⚠ Fixed Contract – Non Billable
+    </span>
 {% else %}
-<button onclick="approveRow({{ row[0] }})">
-Approve
-</button>
+    {{ row[15] }}
 {% endif %}
+</td>
+<td>
+<a href="https://www.google.com/maps/dir/{{ row[22] }},{{ row[23] }}/{{ row[5] }}"
+   target="_blank"
+   style="color:#facc15; font-size:18px;">
+   🗺️
+</a>
 </td>
 
 </tr>
 {% endfor %}
 </table>
 
-<br>
-<button onclick="approveAll()">Approve All</button>
-
 <script>
 function recalc(rowId, systemKm, systemMin) {
+
     const visits = parseInt(document.getElementById("visits_" + rowId).value) || 1;
-    const finalKm = (systemKm * visits).toFixed(2);
-    const finalMin = (systemMin * visits).toFixed(1);
+    const returnChecked = document.getElementById("return_" + rowId).checked;
+
+    let multiplier = visits;
+    if (returnChecked) multiplier = visits * 2;
+
+    const finalKm = (systemKm * multiplier).toFixed(2);
+    const finalMin = (systemMin * multiplier).toFixed(1);
+
     document.getElementById("final_km_" + rowId).value = finalKm;
     document.getElementById("final_travel_" + rowId).value = finalMin;
 }
+
+/* 🔥 AUTO CALCULATE ON PAGE LOAD */
+window.onload = function() {
+    {% for row in rows %}
+        recalc({{ row[0] }}, {{ row[9] }}, {{ row[10] }});
+    {% endfor %}
+};
 </script>
 
 {% endblock %}

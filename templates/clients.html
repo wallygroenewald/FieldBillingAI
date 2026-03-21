@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h1>Manage Clients</h1>
+
+<hr>
+<h2>Add Client</h2>
+
+<div style="margin-bottom:15px;">
+    <input type="text" id="client_name" placeholder="Client Name" required>
+    <input type="number" id="external_rate" placeholder="External Rate (R)" step="0.01" required>
+    <input type="number" id="internal_rate" placeholder="Internal Rate (R)" step="0.01" required>
+
+    <button id="addClientBtn" onclick="addClient()">
+        Add Client
+    </button>
+</div>
+
+<hr>
+
+<table border="1" cellpadding="8" width="100%">
+<tr>
+    <th>ID</th>
+    <th>Name</th>
+    <th>External Rate (R)</th>
+    <th>Internal Rate (R)</th>
+    <th>Actions</th>
+</tr>
+
+{% for client in clients %}
+<tr>
+    <td>{{ client[0] }}</td>
+
+    <td>{{ client[1] }}</td>
+
+    <td>
+        <input type="number"
+               step="0.01"
+               id="ext_{{ client[0] }}"
+               value="{{ client[3] }}">
+    </td>
+
+    <td>
+        <input type="number"
+               step="0.01"
+               id="int_{{ client[0] }}"
+               value="{{ client[4] }}">
+    </td>
+
+    <td>
+        <button onclick="updateClient({{ client[0] }})">
+            Save
+        </button>
+
+        <button onclick="deleteClient({{ client[0] }})"
+                style="background:red; color:white;">
+            Delete
+        </button>
+    </td>
+</tr>
+{% endfor %}
+
+</table>
+
+<script>
+async function addClient() {
+
+    const btn = document.getElementById("addClientBtn");
+    const name = document.getElementById("client_name").value.trim();
+    const ext = document.getElementById("external_rate").value;
+    const intRate = document.getElementById("internal_rate").value;
+
+    if (!name) {
+        alert("Client name required");
+        return;
+    }
+
+    btn.disabled = true;
+
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("external_rate", ext || 0);
+    formData.append("internal_rate", intRate || 0);
+
+    const response = await fetch("/admin/add-client", {
+        method: "POST",
+        body: formData
+    });
+
+    const data = await response.json();
+
+    if (data.status === "success") {
+        location.reload();
+    } 
+    else if (data.status === "exists") {
+        alert("Client already exists");
+        btn.disabled = false;
+    } 
+    else {
+        alert("Error adding client");
+        btn.disabled = false;
+    }
+}
+
+async function updateClient(id) {
+
+    const ext = document.getElementById("ext_" + id).value;
+    const int = document.getElementById("int_" + id).value;
+
+    const formData = new FormData();
+    formData.append("external_rate", ext || 0);
+    formData.append("internal_rate", int || 0);
+
+    const response = await fetch("/admin/update-client/" + id, {
+        method: "POST",
+        body: formData
+    });
+
+    const data = await response.json();
+
+    if (data.status === "success") {
+        alert("Client updated");
+    } else {
+        alert("Update failed");
+    }
+}
+
+async function deleteClient(id) {
+
+    if (!confirm("Delete this client?")) return;
+
+    const response = await fetch("/admin/delete-client/" + id, {
+        method: "POST"
+    });
+
+    const data = await response.json();
+
+    if (data.status === "deleted") {
+        location.reload();
+    } else {
+        alert("Delete failed");
+    }
+}
+</script>
+
+{% endblock %}

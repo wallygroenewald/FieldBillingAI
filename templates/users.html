@@ -1,68 +1,105 @@
 {% extends "base.html" %}
 {% block content %}
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Manage Users</title>
-</head>
-<body>
 
 <h1>Manage Users</h1>
-
 
 <hr>
 <h2>Add User</h2>
 
-<input type="text" id="username" placeholder="Username" required>
-<input type="password" id="password" placeholder="Password" required>
+<div style="margin-bottom:15px;">
+    <input type="text" id="username" placeholder="Username" required>
+    <input type="password" id="password" placeholder="Password" required>
 
-<select id="role">
-    <option value="user">User</option>
-    <option value="admin">Admin</option>
-</select>
+    <select id="client_select">
+        <option value="">Internal (No Client)</option>
+        {% for client in clients %}
+        <option value="{{ client[0] }}">{{ client[1] }}</option>
+        {% endfor %}
+    </select>
 
-<button onclick="addUser()">Add User</button>
+    <select id="account_type">
+        <option value="user">User</option>
+        <option value="admin">Admin</option>
+        <option value="client">Client</option>
+    </select>
+
+    <button onclick="addUser()">Add User</button>
+</div>
 
 <hr>
-<table border="1" cellpadding="8">
-    <tr>
-        <th>ID</th>
-        <th>Username</th>
-        <th>Role</th>
-        <th>Actions</th>
-    </tr>
 
-    {% for user in users %}
-    <tr>
-        <td>{{ user[0] }}</td>
-        <td>{{ user[1] }}</td>
-        <td>{{ user[2] }}</td>
-        <td>
+<table border="1" cellpadding="8" width="100%">
+<tr>
+    <th>ID</th>
+    <th>Username</th>
+    <th>Role</th>
+    <th>Client</th>
+    <th>Actions</th>
+</tr>
 
-            <form method="post" action="/admin/delete-user/{{ user[0] }}" style="display:inline;">
-                <button style="background:red;">Delete</button>
-            </form>
+{% for user in users %}
+<tr>
+    <td>{{ user[0] }}</td>
+    <td>{{ user[1] }}</td>
 
-            <form method="post" action="/admin/reset-password/{{ user[0] }}" style="display:inline;">
-                <input type="text" name="new_password" placeholder="New password" required>
-                <button>Reset</button>
-            </form>
+    <!-- ROLE DISPLAY -->
+    <td>
+        <select onchange="changeRole({{ user[0] }}, this.value)">
+            <option value="admin" {% if user[2]=='admin' %}selected{% endif %}>Admin</option>
+            <option value="user" {% if user[2]=='user' %}selected{% endif %}>User</option>
+            <option value="client" {% if user[2]=='client' %}selected{% endif %}>Client</option>
+        </select>
+    </td>
 
-        </td>
-    </tr>
-    {% endfor %}
+    <!-- CLIENT DISPLAY -->
+    <td>
+        {% if user[4] %}
+            {% for client in clients %}
+                {% if client[0] == user[4] %}
+                    {{ client[1] }}
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            -
+        {% endif %}
+    </td>
+
+    <!-- ACTIONS -->
+    <td>
+
+        <form method="post" action="/admin/delete-user/{{ user[0] }}" style="display:inline;">
+            <button style="background:red; color:white;">Delete</button>
+        </form>
+
+        <form method="post" action="/admin/reset-password/{{ user[0] }}" style="display:inline;">
+            <input type="text" name="new_password" placeholder="New password" required>
+            <button>Reset</button>
+        </form>
+
+    </td>
+</tr>
+{% endfor %}
+
 </table>
+
 <script>
 async function addUser() {
 
-    const username = document.getElementById("username").value;
+    const username = document.getElementById("username").value.trim();
     const password = document.getElementById("password").value;
-    const role = document.getElementById("role").value;
+    const clientId = document.getElementById("client_select").value;
+    const role = document.getElementById("account_type").value;
+
+    if (!username || !password) {
+        alert("Username and password required");
+        return;
+    }
 
     const formData = new FormData();
     formData.append("username", username);
     formData.append("password", password);
     formData.append("role", role);
+    formData.append("client_id", clientId);
 
     const response = await fetch("/admin/add-user", {
         method: "POST",
@@ -72,15 +109,33 @@ async function addUser() {
     const data = await response.json();
 
     if (data.status === "success") {
-        showToast("User added successfully!");
         location.reload();
     } else if (data.status === "exists") {
-        showToast("User already exists!");
+        alert("User already exists");
     } else {
-        showToast("Error adding user.");
+        alert("Error adding user");
     }
 }
+
+async function changeRole(userId, role) {
+
+    const formData = new FormData();
+    formData.append("new_role", role);
+
+    const response = await fetch("/admin/change-role/" + userId, {
+        method: "POST",
+        body: formData
+    });
+
+    const data = await response.json();
+
+    if (data.status === "success") {
+        location.reload();
+    } else {
+        alert("Error updating role");
+    }
+}
+
 </script>
-</body>
-</html>
+
 {% endblock %}

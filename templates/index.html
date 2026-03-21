@@ -20,8 +20,8 @@ async function calculateRoute() {
     const destination = document.querySelectorAll("input")[1].value;
 
     const formData = new FormData();
-    formData.append("origin", origin);
-    formData.append("destination", destination);
+    formData.append("origin_label", engineerName);
+    formData.append("destination_label", siteName);
 
     const response = await fetch("/calculate-route", {
         method: "POST",
@@ -51,8 +51,15 @@ async function calculateRoute() {
 <th>Minutes</th>
 </tr>
 
-<!-- Your rows here -->
-
+{% for job in jobs %}
+<tr>
+<td>{{ job[0] }}</td>
+<td>{{ job[1] }}</td>
+<td>{{ job[2] }}</td>
+<td>{{ job[3] }}</td>
+<td>{{ job[4] }}</td>
+</tr>
+{% endfor %}
 </table>
 
 <style>
